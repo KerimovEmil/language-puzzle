@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language Puzzle - P2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+    color: #222;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+  .container {
+    max-width: 800px;
+    width: 100%;
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    text-align: center;
+    position: relative;
+  }
+  .back {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.25rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    color: #999;
+    transition: color 0.2s;
+  }
+  .back:hover { color: #222; }
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .subtitle {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 1.8rem;
+    line-height: 1.5;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .card {
+    background: #fafafa;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    transition: transform 0.15s;
+  }
+  .card:hover { transform: translateY(-2px); }
+  .card img {
+    display: block;
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background: #eee;
+  }
+  .blur-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+  .blur-wrap img.blurred {
+    filter: blur(20px);
+    pointer-events: none;
+    user-select: none;
+  }
+  .blur-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  .blur-wrap.blurred .blur-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .blur-btn {
+    background: rgba(255,255,255,0.9);
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .blur-btn:hover { background: #fff; }
+  .label {
+    display: block;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #555;
+    background: #fff;
+    letter-spacing: 0.5px;
+  }
+  .clue-text, .explanation-text {
+    display: block;
+    padding: 0 0.5rem;
+    font-size: 0.82rem;
+    color: #888;
+    background: #f8f8f8;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s, padding 0.3s;
+  }
+  .clue-text { font-style: italic; }
+  .explanation-text { color: #666; }
+  .show-clues .clue-text {
+    max-height: 60px;
+    padding: 0.4rem 0.5rem;
+  }
+  .show-explanation .explanation-text {
+    max-height: 60px;
+    padding: 0.4rem 0.5rem;
+  }
+  .btn {
+    display: inline-block;
+    padding: 0.7rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-dark {
+    background: #222;
+    color: #fff;
+  }
+  .btn-dark:hover { background: #444; }
+  .btn-outline {
+    background: transparent;
+    color: #666;
+    border: 1px solid #ccc;
+  }
+  .btn-outline:hover { background: #f5f5f5; }
+  .btn-active {
+    background: #222;
+    color: #fff;
+    border-color: #222;
+  }
+  .btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  #answer {
+    margin-top: 1rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #222;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.4s, transform 0.4s;
+    pointer-events: none;
+  }
+  #answer.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .footer-note {
+    margin-top: 1.5rem;
+    font-size: 0.75rem;
+    color: #bbb;
+  }
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .container { padding: 1.25rem; }
+    h1 { font-size: 1.3rem; }
+    .card img { height: 140px; }
+    #answer { font-size: 2rem; }
+    .back { top: 0.75rem; left: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="../index.html">← Back</a>
+  <h1>Language Puzzle</h1>
+  <p class="subtitle">Each picture represents the same word in a different language. Can you find it?</p>
+
+  <div class="grid" id="grid">
+    <div class="card">
+      <div class="blur-wrap blurred" id="englishClue">
+        <img src="plant_english_easy.png" alt="English clue" class="blurred">
+        <div class="blur-overlay">
+          <button class="blur-btn" onclick="event.stopPropagation(); revealClue()">Reveal clue</button>
+        </div>
+      </div>
+      <span class="label">English</span>
+      <span class="clue-text">egg</span>
+      <span class="explanation-text">egg + plant → eggplant</span>
+    </div>
+    <div class="card">
+      <img src="almond_turkish_azeri.png" alt="Turkish / Azeri clue">
+      <span class="label">Turkish / Azeri</span>
+      <span class="clue-text">almond</span>
+      <span class="explanation-text">almond → badımcan</span>
+    </div>
+    <div class="card">
+      <img src="melon_latin_austrian_italian.png" alt="Latin / Austrian / Italian clue">
+      <span class="label">Latin / Austrian / Italian</span>
+      <span class="clue-text">melon</span>
+      <span class="explanation-text">melon → melanzani</span>
+    </div>
+    <div class="card">
+      <img src="auber_station_jeans_british_german_french.png" alt="British / German / French clue">
+      <span class="label">British / German / French</span>
+      <span class="clue-text">Auber + jeans</span>
+      <span class="explanation-text">Auber + jeans → aubergine</span>
+    </div>
+    <div class="card">
+      <img src="blue_tomato_macedonian.png" alt="Macedonian clue">
+      <span class="label">Macedonian</span>
+      <span class="clue-text">blue tomato</span>
+      <span class="explanation-text">blue tomato → модар патлиџан</span>
+    </div>
+    <div class="card">
+      <img src="anti_wind_sanskrit.png" alt="Sanskrit clue">
+      <span class="label">Sanskrit</span>
+      <span class="clue-text">anti-wind</span>
+      <span class="explanation-text">anti-wind vegetable → वृन्ताकी</span>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-outline" id="cluesBtn" onclick="toggleClues()">Show Clues</button>
+    <button class="btn btn-outline" id="explainBtn" onclick="toggleExplanation()">Explanation</button>
+  </div>
+  <div class="btn-group" style="margin-top: 0.75rem;">
+    <button class="btn btn-dark" id="answerBtn" onclick="toggleAnswer()">Reveal Answer</button>
+  </div>
+  <div id="answer">eggplant</div>
+</div>
+
+<script>
+  function toggleAnswer() {
+    const el = document.getElementById('answer');
+    const btn = document.getElementById('answerBtn');
+    const revealed = el.classList.toggle('visible');
+    btn.textContent = revealed ? 'Hide Answer' : 'Reveal Answer';
+  }
+  function toggleClues() {
+    const grid = document.getElementById('grid');
+    const btn = document.getElementById('cluesBtn');
+    const showing = grid.classList.toggle('show-clues');
+    btn.textContent = showing ? 'Hide Clues' : 'Show Clues';
+    updateExplainBtn();
+  }
+  function toggleExplanation() {
+    const grid = document.getElementById('grid');
+    const btn = document.getElementById('explainBtn');
+    const showing = grid.classList.toggle('show-explanation');
+    if (showing) {
+      grid.classList.add('show-clues');
+      document.getElementById('cluesBtn').textContent = 'Show Clues';
+    }
+    updateExplainBtn();
+  }
+  function updateExplainBtn() {
+    const grid = document.getElementById('grid');
+    const btn = document.getElementById('explainBtn');
+    btn.textContent = grid.classList.contains('show-explanation') ? 'Hide Explanation' : 'Explanation';
+    if (grid.classList.contains('show-explanation')) {
+      btn.className = 'btn btn-active';
+    } else {
+      btn.className = 'btn btn-outline';
+    }
+  }
+  function revealClue() {
+    const wrap = document.getElementById('englishClue');
+    const img = wrap.querySelector('img');
+    wrap.classList.remove('blurred');
+    img.classList.remove('blurred');
+    const overlay = wrap.querySelector('.blur-overlay');
+    overlay.style.pointerEvents = 'none';
+    overlay.style.opacity = '0';
+  }
+</script>
+</body>
+</html>

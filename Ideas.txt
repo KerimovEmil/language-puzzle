@@ -1,0 +1,7 @@
+P: "No"
+
+- Chinese: "bu" -> "ghost scaring you"
+- Azeri: "Yoh" -> ??
+- Russian: "Net" -> "volleyball net"
+- English: "No" -> 
+
